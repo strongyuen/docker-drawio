@@ -15,32 +15,45 @@ RUN apt-get update \
     && sh -c 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apt-get update \
     && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 dbus dbus-x11 \
-      --no-install-recommends \
+#<<<<<<< HEAD
+#      --no-install-recommends \
+#    && service dbus start \
+#    && rm -rf /var/lib/apt/lists/* \
+#    && groupadd -r pptruser && useradd -rm -g pptruser -G audio,video pptruser
+#
+#USER pptruser
+#
+#WORKDIR /home/pptruser
+#
+##COPY puppeteer-browsers-latest.tgz puppeteer-latest.tgz puppeteer-core-latest.tgz ./
+#
+#ENV DBUS_SESSION_BUS_ADDRESS autolaunch:
+#
+## Install @puppeteer/browsers, puppeteer and puppeteer-core into /home/pptruser/node_modules.
+#RUN npm i ./puppeteer-browsers-latest.tgz ./puppeteer-core-latest.tgz ./puppeteer-latest.tgz \
+#    && rm ./puppeteer-browsers-latest.tgz ./puppeteer-core-latest.tgz ./puppeteer-latest.tgz \
+#    && (node -e "require('child_process').execSync(require('puppeteer').executablePath() + ' --credits', {stdio: 'inherit'})" > THIRD_PARTY_NOTICES) \
+#=======
+        --no-install-recommends \
     && service dbus start \
-    && rm -rf /var/lib/apt/lists/* \
-    && groupadd -r pptruser && useradd -rm -g pptruser -G audio,video pptruser
-
-USER pptruser
-
-WORKDIR /home/pptruser
-
-COPY puppeteer-browsers-latest.tgz puppeteer-latest.tgz puppeteer-core-latest.tgz ./
-
-ENV DBUS_SESSION_BUS_ADDRESS autolaunch:
-
-# Install @puppeteer/browsers, puppeteer and puppeteer-core into /home/pptruser/node_modules.
-RUN npm i ./puppeteer-browsers-latest.tgz ./puppeteer-core-latest.tgz ./puppeteer-latest.tgz \
-    && rm ./puppeteer-browsers-latest.tgz ./puppeteer-core-latest.tgz ./puppeteer-latest.tgz \
-    && (node -e "require('child_process').execSync(require('puppeteer').executablePath() + ' --credits', {stdio: 'inherit'})" > THIRD_PARTY_NOTICES) \
+    && wget http://ftp.de.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb \
+    && apt install -y --no-install-recommends \
+        ./ttf-mscorefonts-installer_3.8_all.deb \
+    && apt install -y --no-install-recommends minizip \
+    && groupadd -r pptruser && useradd -rm -g pptruser -G audio,video pptruser \
+#>>>>>>> e65107b477cb820f77b605f14dbe4c299b775be9
     && cd /home/pptruser \
     && git clone https://github.com/jgraph/draw-image-export2.git \
-    && cd draw-image-export2 \
-    && npm install \
+    && chown -R pptruser:pptruser /home/pptruser \
     && apt-get remove -y --purge git wget \
 
 USER pptruser
 
+ENV DBUS_SESSION_BUS_ADDRESS autolaunch:
+
 WORKDIR /home/pptruser/draw-image-export2
+
+RUN npm install
 
 EXPOSE 8000
 
