@@ -6,25 +6,31 @@ RUN apt-get update -y && \
     mkdir -p /usr/share/man/man1 && \
     apt-get install -y \
         ant \
-        git
+        git \
+        unzip
 
 RUN cd /tmp && \
-    git clone --depth 1 https://github.com/jgraph/drawio.git && \
+    git clone --depth 1 https://github.com/strongyuen/drawio.git && \
+    cd /tmp/drawio/ && \
     cd /tmp/drawio/etc/build/ && \
     ant war
 
 FROM tomcat:9-jre11
 
 LABEL maintainer="JGraph Ltd" \
-      org.opencontainers.image.authors="JGraph Ltd" \
-      org.opencontainers.image.url="https://www.drawio.com" \
-      org.opencontainers.image.source="https://github.com/jgraph/docker-drawio"
+      org.opencontainers.image.authors="TCGOIDC Ltd" \
+      org.opencontainers.image.url="https://www.tcgoidc.com" \
+      org.opencontainers.image.source="https://github.com/strongyuen/docker-drawio"
 
 ENV RUN_USER            tomcat
 ENV RUN_GROUP           tomcat
 
 RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends \
+    apt-get install tzdata \
+    && ls /usr/share/zoneinfo \
+    && cp /usr/share/zoneinfo/Asia/Hong_Kong /etc/localtime \
+    && echo "Asia/Hong_Kong" > /etc/timezone \
+    && apt-get install -y --no-install-recommends \
         certbot \
         curl \
         xmlstarlet \

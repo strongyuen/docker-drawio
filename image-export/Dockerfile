@@ -1,4 +1,4 @@
-FROM node:lts-slim
+FROM node:20@sha256:cb7cd40ba6483f37f791e1aace576df449fc5f75332c19ff59e2c6064797160e
 
 LABEL maintainer="JGraph Ltd"
 
@@ -10,22 +10,33 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 # Note: this installs the necessary libs to make the bundled version of Chrome that Puppeteer
 # installs, work.
 RUN apt-get update \
-    && apt-get install -y wget gnupg git curl \
+    && apt-get install -y wget gnupg \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/googlechrome-linux-keyring.gpg \
     && sh -c 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apt-get update \
-    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 \
-        --no-install-recommends \
-    && wget http://ftp.de.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb \
-    && apt install -y --no-install-recommends \
-        ./ttf-mscorefonts-installer_3.8_all.deb \
-    && groupadd -r pptruser && useradd -rm -g pptruser -G audio,video pptruser \
+    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 dbus dbus-x11 \
+      --no-install-recommends \
+    && service dbus start \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r pptruser && useradd -rm -g pptruser -G audio,video pptruser
+
+USER pptruser
+
+WORKDIR /home/pptruser
+
+COPY puppeteer-browsers-latest.tgz puppeteer-latest.tgz puppeteer-core-latest.tgz ./
+
+ENV DBUS_SESSION_BUS_ADDRESS autolaunch:
+
+# Install @puppeteer/browsers, puppeteer and puppeteer-core into /home/pptruser/node_modules.
+RUN npm i ./puppeteer-browsers-latest.tgz ./puppeteer-core-latest.tgz ./puppeteer-latest.tgz \
+    && rm ./puppeteer-browsers-latest.tgz ./puppeteer-core-latest.tgz ./puppeteer-latest.tgz \
+    && (node -e "require('child_process').execSync(require('puppeteer').executablePath() + ' --credits', {stdio: 'inherit'})" > THIRD_PARTY_NOTICES) \
     && cd /home/pptruser \
     && git clone https://github.com/jgraph/draw-image-export2.git \
     && cd draw-image-export2 \
     && npm install \
     && apt-get remove -y --purge git wget \
-    && rm -rf /var/lib/apt/lists/*
 
 USER pptruser
 
