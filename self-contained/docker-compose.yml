@@ -1,7 +1,7 @@
 version: '3'
 services:
   plantuml-server:
-    image: plantuml/plantuml-server
+    image: plantuml-server:latest
     hostname: plantuml-server
     expose:
       - "8080"
@@ -13,7 +13,7 @@ services:
     environment:
       - DRAWIO_SERVER_URL=${DRAWIO_BASE_URL}
   image-export:
-    image: jgraph/export-server
+    image: export-server
     hostname: image-export
     expose:
       - "8000"

@@ -17,7 +17,7 @@ RUN cd /tmp && \
 
 FROM tomcat:9-jre11
 
-LABEL maintainer="JGraph Ltd" \
+LABEL maintainer="TCGOidc Ltd" \
       org.opencontainers.image.authors="TCGOIDC Ltd" \
       org.opencontainers.image.url="https://www.tcgoidc.com" \
       org.opencontainers.image.source="https://github.com/strongyuen/docker-drawio"
